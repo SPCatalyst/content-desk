@@ -147,7 +147,7 @@ table.list td.act .btn{margin-left:4px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SB_URL = 'https://zktulncfdxknfudsiovx.supabase.co';
-const SB_ANON = 'sb_publishable_ku-y5HQuQxkb41rRtTTfOg_1nP_9HgQ';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InprdHVsbmNmZHhrbmZ1ZHNpb3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MzgxMTksImV4cCI6MjA4ODQxNDExOX0.Tj6LPEmtdDYpUbW-VOp54s8eW4y-rdFaDymfDHHBa2c';
 const sb = supabase.createClient(SB_URL, SB_ANON);
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
