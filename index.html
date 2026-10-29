@@ -148,7 +148,7 @@ table.list td.act .btn{margin-left:4px}
 <script>
 const SB_URL = 'https://zktulncfdxknfudsiovx.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InprdHVsbmNmZHhrbmZ1ZHNpb3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MzgxMTksImV4cCI6MjA4ODQxNDExOX0.Tj6LPEmtdDYpUbW-VOp54s8eW4y-rdFaDymfDHHBa2c';
-const sb = supabase.createClient(SB_URL, SB_ANON);
+const sb = supabase.createClient(SB_URL, SB_ANON, { auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true } });
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const BRAND_ORDER = ['cityverse','joe_founder','catalyst','poliverse','st_pete_af','aicoe','st_petersburg_foundation','science_center','dtsp_fun','beach_drive','st_pete_beach_today','five_bucks_drinkery','st_pete_x'];
@@ -609,7 +609,7 @@ async function load(){
 async function gate(){
   const { data: { session } } = await sb.auth.getSession();
   if(!session){
-    $('#app').innerHTML = `<div class="gate"><h1>Content Desk</h1><p>Sign in with your stpete.co Google account.</p><button class="btn primary" id="login">Sign in with Google</button></div>`;
+    $('#app').innerHTML = `<div class="gate"><h1>Content Desk</h1><p>Sign in with your stpete.co Google account.</p>${(function(){ try { const q = new URLSearchParams(location.search + '&' + location.hash.replace(/^#\/?/, '')); const e = q.get('error_description') || q.get('error'); return e ? '<p style="color:#ffb0ab">Sign-in returned: ' + esc(e) + '</p>' : ''; } catch(_) { return ''; } })()}<button class="btn primary" id="login">Sign in with Google</button></div>`;
     $('#login').onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + window.location.pathname, queryParams:{ hd:'stpete.co', prompt:'select_account' } } });
     return;
   }
