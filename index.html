@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Content Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1115;--panel:#161920;--panel2:#1d212b;--line:#262b36;--line2:#343a48;
+  --ink:#eef0f4;--ink2:#aab1c0;--ink3:#737b8c;
+  --green:#3ddc84;--yellow:#f5c542;--red:#ff5f57;--none:#4a5160;
+  --accent:#8fb4ff;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.45}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding:28px 24px 80px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:40px;letter-spacing:-.01em;margin:0;line-height:1}
+h2.sec{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:24px;margin:28px 0 10px}
+.sub{color:var(--ink3);font-size:13px;margin-top:8px}
+.crumb{font-size:13px;color:var(--ink3);margin-bottom:10px}
+.crumb a{text-decoration:none;color:var(--ink2)}
+.tally{display:flex;gap:10px;flex-wrap:wrap}
+.tally .t{border:1px solid var(--line2);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center;background:var(--panel)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.dot.green{background:var(--green)}.dot.yellow{background:var(--yellow)}.dot.red{background:var(--red)}.dot.none{background:var(--none)}.dot.blue{background:var(--accent)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.toolbar button,.btn{background:var(--panel2);border:1px solid var(--line2);color:var(--ink);padding:8px 14px;border-radius:9px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.toolbar button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px;display:flex;flex-direction:column;gap:12px;position:relative}
+.card.red-edge{border-left:4px solid var(--red)}
+.card.yellow-edge{border-left:4px solid var(--yellow)}
+.card.green-edge{border-left:4px solid var(--green)}
+.card.none-edge{border-left:4px solid var(--none)}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brandrow a{text-decoration:none;display:block}
+.logo{height:30px;max-width:190px;object-fit:contain;display:block}
+.logo.big{height:44px;max-width:280px}
+.brandname{font-family:Newsreader,Georgia,serif;font-size:24px;font-weight:500}
+.owner{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em}
+.surf{border-top:1px solid var(--line);padding-top:10px;display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:start}
+.surf .lbl{font-weight:600;font-size:14px}
+.surf .meta{color:var(--ink2);font-size:12.5px;margin-top:2px}
+.surf .num{text-align:right;font-variant-numeric:tabular-nums}
+.surf .num b{font-size:22px;font-weight:600;display:block;line-height:1}
+.surf .num span{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}
+.last{grid-column:2/4;margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
+.last li{font-size:12.5px;color:var(--ink2);display:flex;gap:8px;align-items:baseline}
+.last li .d{color:var(--ink3);flex:none;width:52px;font-variant-numeric:tabular-nums}
+.last li a{text-decoration:none;border-bottom:1px dotted var(--line2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.last li.empty{color:var(--ink3);font-style:italic}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11.5px;border:1px solid var(--line2);border-radius:999px;padding:3px 9px;color:var(--ink2);white-space:nowrap}
+.chip.idea{border-color:#3b4a6b;color:#bcd0ff}
+.chip.warn{border-color:#5a3a3a;color:#ffb0ab}
+.chip.ok{border-color:#2f5a44;color:#9fe8bf}
+.chip.amber{border-color:#5a4a2a;color:#ffd27d}
+.chip.auto{border-color:#2f5a44;color:#9fe8bf}
+.chip.review{border-color:#5a4a2a;color:#ffd27d}
+.gen{font-size:12.5px;padding:6px 11px}
+.stats{grid-column:2/4;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink3);margin-top:2px}
+.stats b{color:var(--ink2);font-weight:600}
+.stats .direct{color:#ffd27d}
+.tag{font-style:normal;font-size:10.5px;border:1px solid var(--line2);border-radius:5px;padding:0 5px;color:var(--ink3);flex:none;margin-left:4px}
+.tag.m{color:var(--ink2)}
+.accts{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px}
+.acct{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;border:1px solid var(--line2);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.acct.lapsed{border-color:#5a3a3a;color:#ffb0ab}
+.acct.no_account{color:var(--ink3);border-style:dashed}
+.acct.src{margin-left:auto;color:var(--ink3);border:none;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.chip.inbox{border-color:#5a4a2a;color:#ffd27d}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(720px,100%);background:var(--panel);border-left:1px solid var(--line2);transform:translateX(100%);transition:transform .22s ease;z-index:20;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.drawer header h2{margin:0;font-family:Newsreader,Georgia,serif;font-weight:500;font-size:26px}
+.drawer .body{padding:18px 22px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+.field label{display:block;font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.field select,.field textarea,.field input{width:100%;background:var(--bg);border:1px solid var(--line2);color:var(--ink);border-radius:9px;padding:10px 12px;font:inherit;font-size:14px}
+.field textarea{min-height:90px;resize:vertical}
+.field textarea.tall{min-height:260px;font-size:13.5px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ideas{display:flex;flex-direction:column;gap:8px}
+.idea{border:1px solid var(--line2);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--bg)}
+.idea.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.idea b{display:block;font-size:14px}
+.idea p{margin:4px 0 0;font-size:12.5px;color:var(--ink2)}
+.idea small{color:var(--ink3)}
+.out{background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:14px;white-space:pre-wrap;font-size:13.5px;line-height:1.5;max-height:420px;overflow:auto}
+.formats{display:flex;gap:8px;flex-wrap:wrap}
+.formats label{display:flex;gap:6px;align-items:center;border:1px solid var(--line2);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10;display:none}
+.scrim.open{display:block}
+.gate{max-width:420px;margin:120px auto;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:36px}
+.gate h1{font-size:32px}
+.gate p{color:var(--ink2)}
+.note{font-size:12.5px;color:var(--ink3)}
+.persona-list{display:flex;flex-direction:column;gap:8px}
+.persona{border:1px solid var(--line2);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.persona b{font-size:14px}
+.persona p{margin:3px 0 0;font-size:12.5px;color:var(--ink2)}
+/* brand page */
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:14px 0 6px}
+.goal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.goal .g{font-weight:600;font-size:14px;display:flex;gap:8px;align-items:flex-start}
+.goal .g .dot{margin-top:5px}
+.goal .who{font-size:12px;color:var(--ink3)}
+.goal .nums{display:flex;gap:16px;font-size:12px;color:var(--ink3)}
+.goal .nums b{display:block;font-size:20px;color:var(--ink);font-weight:600;line-height:1.1}
+.authors{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.author{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;background:var(--panel);text-decoration:none}
+.author select{background:var(--bg);border:1px solid var(--line2);color:var(--ink2);border-radius:999px;padding:2px 8px;font:inherit;font-size:11.5px}
+table.list{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+table.list th{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600}
+table.list td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13.5px}
+table.list tr:last-child td{border-bottom:none}
+table.list td.t b{display:block;font-size:14.5px;font-weight:600}
+table.list td.t span{color:var(--ink2);font-size:12.5px}
+table.list td.n{white-space:nowrap;color:var(--ink2);font-variant-numeric:tabular-nums}
+table.list td.n.old{color:var(--yellow)}
+table.list td.n.stale{color:var(--red)}
+table.list td.act{white-space:nowrap;text-align:right}
+table.list td.act .btn{margin-left:4px}
+.tblwrap{overflow:auto}
+.empty{color:var(--ink3);font-style:italic;padding:16px;background:var(--panel);border:1px dashed var(--line2);border-radius:var(--radius)}
+.contacts{display:flex;flex-direction:column;gap:6px}
+.contact{display:grid;grid-template-columns:1fr 1.2fr 1fr auto;gap:6px;align-items:center}
+.contact input{width:100%;background:var(--bg);border:1px solid var(--line2);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:13px}
+.kv{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink3)}
+.kv b{color:var(--ink2);font-weight:600}
+@media (max-width:720px){.wrap{padding:18px 14px 60px}h1{font-size:32px}.grid{grid-template-columns:1fr}.row2,.row3{grid-template-columns:1fr}.contact{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer"></aside>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SB_URL = 'https://zktulncfdxknfudsiovx.supabase.co';
+const SB_ANON = 'sb_publishable_ku-y5HQuQxkb41rRtTTfOg_1nP_9HgQ';
+const sb = supabase.createClient(SB_URL, SB_ANON);
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BRAND_ORDER = ['cityverse','joe_founder','catalyst','poliverse','st_pete_af','aicoe','st_petersburg_foundation','science_center','dtsp_fun','beach_drive','st_pete_beach_today','five_bucks_drinkery','st_pete_x'];
+const NAMES = {cityverse:'Cityverse',joe_founder:'Joe (founder voice)',catalyst:'St Pete Catalyst',poliverse:'Poliverse',st_pete_af:'St Pete AF',aicoe:'AICOE',st_petersburg_foundation:'St Petersburg Foundation',science_center:'Science Center',dtsp_fun:'DTSP Fun',beach_drive:'Beach Drive',st_pete_beach_today:'St Pete Beach Today',five_bucks_drinkery:'5 Bucks Drinkery',st_pete_x:'St Pete X'};
+const SURF = {social:'Social',web:'Website',founder:'Founder posts',podcast:'Episodes',cv_flow:'Content Flow',cv_createspace:'Createspace posts'};
+let STATE = {status:[], ideas:[], kits:{}, filter:'all', user:null, outputs:[], interviews:[], brandIdeas:[]};
+
+function logoFor(slug){
+  const k = STATE.kits[slug]; if(!k || !k.logo_assets || !k.logo_assets.public_base) return null;
+  const v = k.logo_assets.variants || {};
+  const f = v.horizontal_white || v.horizontal_color_inverse || v.horizontal_color || v.wordmark_white || v[Object.keys(v)[0]];
+  return f ? k.logo_assets.public_base + encodeURIComponent(f).replace(/%2F/g,'/') : null;
+}
+function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function fmtDay(ymd){ if(!ymd) return ''; const [y,m,d]=ymd.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function ago(days){ if(days==null) return 'never'; if(days<1) return Math.round(days*24)+'h ago'; return Math.round(days)+'d ago'; }
+function daysSince(iso){ return (Date.now()-new Date(iso).getTime())/86400000; }
+function lapsedCount(st){ let n=0; for(const s of st){ if(s.surface==='social') n += (s.accounts||[]).filter(a=>a.status==='lapsed').length; } return n; }
+function unreadTotal(st){ let n=0; for(const s of st){ if(s.surface==='social') n += Number(s.inbox_unread||0); } return n; }
+function worst(colors){ const r=['red','yellow','green','none']; for(const c of r) if(colors.includes(c)) return c; return 'none'; }
+function personaName(brand, slug){ const p=(STATE.kits[brand]?.personas||[]).find(x=>x.slug===slug); return p? p.name : (slug||'brand voice'); }
+function goalLabel(brand, slug){ const g=(STATE.kits[brand]?.goals||[]).find(x=>x.slug===slug); return g? g.label.split(':')[0] : ''; }
+async function api(body){
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch(SB_URL + '/functions/v1/content-desk-api', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SB_ANON}, body: JSON.stringify(body) });
+  const js = await r.json(); if(!js.ok) throw new Error(js.error||'failed'); return js;
+}
+
+/* ---------- router ---------- */
+function route(){
+  const h = location.hash.replace(/^#\/?/, '');
+  const [view, a, b] = h.split('/');
+  if(view==='brand' && a) return renderBrand(a);
+  if(view==='author' && a && b) return renderAuthor(a, b);
+  return render();
+}
+window.addEventListener('hashchange', route);
+
+/* ---------- overview ---------- */
+function render(){
+  const app = $('#app');
+  const byBrand = {};
+  for(const s of STATE.status){ (byBrand[s.brand_slug] ||= []).push(s); }
+  const brands = BRAND_ORDER.filter(b => byBrand[b]).concat(Object.keys(byBrand).filter(b=>!BRAND_ORDER.includes(b)));
+  const tally = {green:0,yellow:0,red:0,none:0};
+  for(const s of STATE.status) tally[s.color]++;
+  const shown = brands.filter(b => STATE.filter==='all' || byBrand[b].some(s=>s.color===STATE.filter));
+  app.innerHTML = `
+  <div class="wrap">
+    <header class="top">
+      <div><h1>Content Desk</h1><div class="sub">Every brand, every surface: what went out, what it did, and whether the accounts are healthy. ${STATE.user ? esc(STATE.user) : ''} · refreshed ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div></div>
+      <div class="tally">
+        <div class="t"><span class="dot green"></span>${tally.green} on schedule</div>
+        <div class="t"><span class="dot yellow"></span>${tally.yellow} slipping</div>
+        <div class="t"><span class="dot red"></span>${tally.red} behind</div>
+        <div class="t"><span class="dot none"></span>${tally.none} tracked only</div>
+        ${lapsedCount(STATE.status)>0 ? `<div class="t" style="border-color:#5a3a3a;color:#ffb0ab">${lapsedCount(STATE.status)} account${lapsedCount(STATE.status)===1?'':'s'} need reconnecting</div>` : ''}
+        ${unreadTotal(STATE.status)>0 ? `<div class="t" style="border-color:#5a4a2a;color:#ffd27d">${unreadTotal(STATE.status)} unread across inboxes</div>` : ''}
+      </div>
+    </header>
+    <div class="toolbar">
+      ${['all','red','yellow','green'].map(f=>`<button data-f="${f}" class="${STATE.filter===f?'on':''}">${f==='all'?'All brands':f==='red'?'Behind':f==='yellow'?'Slipping':'On schedule'}</button>`).join('')}
+      <span class="note" style="margin-left:auto">Yellow at 1.5x the expected gap, red at 2x. Ideas: ${STATE.ideas.length} ready. Click a brand for its page.</span>
+    </div>
+    <div class="grid">
+      ${shown.map(b => card(b, byBrand[b])).join('')}
+    </div>
+  </div>`;
+  app.querySelectorAll('.toolbar button').forEach(btn => btn.onclick = () => { STATE.filter = btn.dataset.f; render(); });
+  app.querySelectorAll('[data-gen]').forEach(btn => btn.onclick = () => openDrawer(btn.dataset.gen));
+}
+
+function card(slug, surfaces){
+  const colors = surfaces.map(s=>s.color);
+  const w = worst(colors);
+  const logo = logoFor(slug);
+  const owner = surfaces.find(s=>s.owner)?.owner;
+  const ideas = STATE.ideas.filter(i=>i.brand_slug===slug);
+  const personas = (STATE.kits[slug]?.personas || []);
+  const waiting = STATE.interviews.filter(i=>i.brand_slug===slug && i.status==='ready').length;
+  const review = STATE.outputs.filter(o=>o.brand_slug===slug && o.status==='draft').length;
+  return `<section class="card ${w}-edge">
+    <div class="brandrow">
+      <a href="#/brand/${slug}" title="Open ${esc(NAMES[slug]||slug)}">${logo ? `<img class="logo" src="${logo}" alt="${esc(NAMES[slug]||slug)}">` : `<div class="brandname">${esc(NAMES[slug]||slug)}</div>`}</a>
+      <div class="owner">${esc(owner||'')}</div>
+    </div>
+    ${surfaces.map(s => `
+      <div class="surf">
+        <span class="dot ${s.color}" style="margin-top:5px"></span>
+        <div><div class="lbl">${esc(SURF[s.surface]||s.surface)}</div>
+          <div class="meta">${s.target_per_week>0 ? `target ${fmtTarget(s.target_per_week)} · last ${ago(s.days_since)}` : `tracked only · last ${ago(s.days_since)}`}</div></div>
+        <div class="num"><b>${s.posted_7d}</b><span>last 7d</span></div>
+        ${s.surface==='social' && (s.reach_7d>0 || s.interactions_7d>0) ? `<div class="stats"><span><b>${kfmt(s.reach_7d)}</b> reach 7d</span><span><b>${kfmt(s.interactions_7d)}</b> interactions 7d</span><span><b>${kfmt(s.reach_28d)}</b> reach 28d</span>${s.outside_7d>0?`<span class="direct">${s.outside_7d} of ${s.posted_7d} posted directly</span>`:''}</div>` : ''}
+        <ul class="last">
+          ${(s.items||[]).length ? s.items.map(it => `<li><span class="d">${fmtDate(it.posted_at)}</span>${it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title||'(untitled)')}</a>` : `<span>${esc(it.title||'(untitled)')}</span>`}${it.via==='analytics'?`<i class="tag" title="Posted directly on the platform, not through the engine">direct</i>`:''}${it.metrics && it.metrics.interactions ? `<i class="tag m">${kfmt(it.metrics.interactions)}</i>`:''}</li>`).join('') : `<li class="empty">nothing recorded yet</li>`}
+        </ul>
+      </div>`).join('')}
+    ${accountsRow(surfaces)}
+    <div class="foot">
+      <div class="chips">
+        <span class="chip idea">${ideas.length} idea${ideas.length===1?'':'s'} ready</span>
+        ${review ? `<span class="chip amber">${review} to review</span>` : ''}
+        ${waiting ? `<span class="chip ok">${waiting} interview${waiting===1?'':'s'} back</span>` : ''}
+        ${personas.length ? `<span class="chip">${personas.length} writer persona${personas.length===1?'':'s'}</span>` : `<span class="chip warn">no persona yet</span>`}
+        ${inboxChip(surfaces)}
+      </div>
+      <div><a class="btn gen" href="#/brand/${slug}">Open</a> <button class="btn gen" data-gen="${slug}">Create</button></div>
+    </div>
+  </section>`;
+}
+function fmtTarget(t){ t=Number(t); if(t>=1) return (Number.isInteger(t)?t:t.toFixed(1))+'/wk'; const m=t*4.33; return (m>=1?Math.round(m):m.toFixed(1))+'/mo'; }
+function kfmt(v){ v=Number(v)||0; return v>=1000000 ? (v/1000000).toFixed(1)+'M' : v>=10000 ? Math.round(v/1000)+'k' : v>=1000 ? (v/1000).toFixed(1)+'k' : String(v); }
+function accountsRow(surfaces){
+  const soc = surfaces.find(s=>s.surface==='social'); if(!soc || !(soc.accounts||[]).length) return '';
+  const NET = {instagram:'Instagram',facebook:'Facebook',linkedin:'LinkedIn',threads:'Threads',bluesky:'Bluesky',x:'X',tiktok:'TikTok',youtube:'YouTube',cityverse:'Cityverse'};
+  return `<div class="accts">${soc.accounts.map(a => `<span class="acct ${a.status}" title="${esc(a.note||'')} checked ${fmtDate(a.last_checked_at)}"><span class="dot ${a.status==='ok'?'green':a.status==='lapsed'?'red':'none'}"></span>${NET[a.network]||esc(a.network)}${a.status==='lapsed'?' · reconnect':a.status==='no_account'?' · not connected':''}</span>`).join('')}<span class="acct src">${esc(soc.distribution||'metricool')}</span></div>`;
+}
+function inboxChip(surfaces){
+  const soc = surfaces.find(s=>s.surface==='social'); if(!soc) return '';
+  return soc.inbox_unread>0 ? `<span class="chip inbox">${soc.inbox_unread} unread in inbox</span>` : '';
+}
+
+/* ---------- brand page ---------- */
+async function loadBrand(slug){
+  const [{data: ideas}, {data: outputs}, {data: interviews}] = await Promise.all([
+    sb.from('content_ideas').select('*').eq('brand_slug', slug).in('status',['ready','interviewing']).order('created_at',{ascending:false}),
+    sb.from('content_outputs').select('id,idea_id,brand_slug,persona_slug,format,title,status,gate,published_at,published_url,destination,engagement,interview_id,created_at,created_by').eq('brand_slug', slug).order('created_at',{ascending:false}).limit(60),
+    sb.from('content_interviews').select('*').eq('brand_slug', slug).order('created_at',{ascending:false}),
+  ]);
+  STATE.brandIdeas = ideas||[]; STATE.outputs = (STATE.outputs.filter(o=>o.brand_slug!==slug)).concat(outputs||[]); STATE.interviews = (STATE.interviews.filter(i=>i.brand_slug!==slug)).concat(interviews||[]);
+  const ids = [...new Set((outputs||[]).map(o=>o.idea_id).filter(Boolean))];
+  STATE.ideaGoals = {};
+  if(ids.length){ const {data: ig} = await sb.from('content_ideas').select('id,goal_slug').in('id', ids); for(const r of ig||[]) STATE.ideaGoals[r.id] = r.goal_slug; }
+}
+function ivFor(ideaId){ return STATE.interviews.filter(i=>i.idea_id===ideaId).sort((a,b)=>b.created_at>a.created_at?1:-1)[0] || null; }
+function ivChip(iv){
+  if(!iv) return `<span class="chip" style="color:var(--ink3);border-style:dashed">no interview</span>`;
+  if(iv.status==='draft') return `<span class="chip">drafted, not sent</span>`;
+  if(iv.status==='sent') return `<span class="chip amber"><span class="dot yellow" style="width:7px;height:7px;margin-right:5px"></span>asked ${fmtDate(iv.sent_at)}</span>`;
+  if(iv.status==='ready') return `<span class="chip ok"><span class="dot green" style="width:7px;height:7px;margin-right:5px"></span>reply in · draft ready</span>`;
+  if(iv.status==='thanked') return `<span class="chip ok">published · thanked</span>`;
+  return `<span class="chip">${esc(iv.status)}</span>`;
+}
+function outStatusChip(o){
+  const m = {draft:['amber','needs review'],approved:['ok','approved, not yet live'],published:['ok','published'],rejected:['warn','rejected']};
+  const [c,l] = m[o.status] || ['',o.status];
+  return `<span class="chip ${c}">${esc(l)}</span>`;
+}
+async function renderBrand(slug){
+  const app = $('#app');
+  app.innerHTML = `<div class="wrap"><div class="crumb"><a href="#/">Content Desk</a> › ${esc(NAMES[slug]||slug)}</div><div class="note">Loading…</div></div>`;
+  await loadBrand(slug);
+  const kit = STATE.kits[slug] || {}; const logo = logoFor(slug);
+  const goals = kit.goals || []; const personas = kit.personas || [];
+  const ideas = STATE.brandIdeas;
+  const outs = STATE.outputs.filter(o=>o.brand_slug===slug);
+  const pub30 = outs.filter(o=>o.status==='published' && o.published_at && daysSince(o.published_at)<=30);
+  const goalCards = goals.map(g => {
+    const ready = ideas.filter(i=>i.goal_slug===g.slug).length;
+    const pub = pub30.filter(o => o.idea_id && STATE.ideaGoals[o.idea_id]===g.slug).length;
+    const color = pub>0 ? 'green' : ready>0 ? 'yellow' : 'red';
+    return `<div class="goal"><div class="g"><span class="dot ${color}"></span><span>${esc(g.label)}</span></div><div class="who">writes as ${esc(personaName(slug,g.persona_slug))}</div><div class="nums"><span><b>${ready}</b>ideas ready</span><span><b>${pub}</b>published 30d</span></div></div>`;
+  }).join('');
+  const authors = personas.map(p => `<span class="author"><a href="#/author/${slug}/${esc(p.slug)}" style="text-decoration:none">${esc(p.name)}</a><select data-gate="${esc(p.slug)}" title="Default gate for this author"><option value="review" ${(p.gate||'review')==='review'?'selected':''}>review first</option><option value="auto" ${p.gate==='auto'?'selected':''}>autopublish</option></select></span>`).join('');
+  app.innerHTML = `
+  <div class="wrap">
+    <div class="crumb"><a href="#/">Content Desk</a> › ${esc(NAMES[slug]||slug)}</div>
+    <header class="top">
+      <div>${logo ? `<img class="logo big" src="${logo}" alt="${esc(NAMES[slug]||slug)}">` : `<h1>${esc(NAMES[slug]||slug)}</h1>`}
+        <div class="sub">${kit.site_url ? `<a href="${esc(kit.site_url)}" target="_blank" rel="noopener">${esc(kit.site_url)}</a> · ` : ''}outreach from ${kit.outreach_email ? esc(kit.outreach_email) : '<span style="color:#ffb0ab">no address set</span>'} <button class="btn sm" id="brandcfg">Settings</button></div>
+      </div>
+      <div class="authors"><span class="note">Authors</span>${authors || '<span class="chip warn">no persona yet</span>'}</div>
+    </header>
+    <div class="goals">${goalCards || '<div class="empty">No goals set for this brand yet.</div>'}</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
+    ${ideas.length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Idea</th><th>Landed</th><th>Happens</th><th>Goal</th><th>Author</th><th>Interview</th><th></th></tr></thead><tbody>
+      ${ideas.map(i => { const d = daysSince(i.created_at); const iv = ivFor(i.id); return `<tr>
+        <td class="t"><b>${esc(i.title)}</b><span>${esc(i.angle||'')}</span>${i.source_url?` <a class="note" href="${esc(i.source_url)}" target="_blank" rel="noopener">${esc(i.source_name||'source')}</a>`:''}${(i.contacts||[]).length?`<div class="note">${(i.contacts||[]).map(c=>esc(c.name||c.email)).join(', ')}</div>`:''}</td>
+        <td class="n ${d>14?'stale':d>7?'old':''}" title="${esc(i.created_at)}">${Math.round(d)}d ago</td>
+        <td class="n">${i.event_date ? fmtDay(i.event_date) : '<span style="color:var(--ink3)">·</span>'}</td>
+        <td>${i.goal_slug ? `<span class="chip">${esc(goalLabel(slug,i.goal_slug))}</span>` : '<span class="chip" style="border-style:dashed;color:var(--ink3)">unassigned</span>'}</td>
+        <td><a href="#/author/${slug}/${esc(i.persona_slug||'')}" style="text-decoration:none">${esc(personaName(slug,i.persona_slug))}</a>${i.gate?`<div><span class="chip ${i.gate}">${i.gate==='auto'?'autopublish':'review'}</span></div>`:''}</td>
+        <td>${ivChip(iv)}</td>
+        <td class="act"><button class="btn sm" data-edit="${i.id}">Details</button><button class="btn sm" data-iv="${i.id}">${iv?'Interview':'Interview'}</button><button class="btn sm primary" data-produce="${i.id}">Produce</button></td>
+      </tr>`; }).join('')}
+    </tbody></table></div>` : `<div class="empty">No ideas queued. Add one, or wait for the scouts.</div>`}
+
+    <h2 class="sec">Pieces</h2>
+    ${outs.length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Piece</th><th>Author</th><th>Status</th><th>Published</th><th>Where</th><th>Engagement</th><th></th></tr></thead><tbody>
+      ${outs.map(o => `<tr>
+        <td class="t"><b>${esc(o.title||'(untitled)')}</b><span>${esc(o.format)} · ${fmtDate(o.created_at)}${o.interview_id?' · from interview':''}</span></td>
+        <td><a href="#/author/${slug}/${esc(o.persona_slug||'')}" style="text-decoration:none">${esc(personaName(slug,o.persona_slug))}</a></td>
+        <td>${outStatusChip(o)}${o.gate?` <span class="chip ${o.gate}">${o.gate==='auto'?'auto':'review'}</span>`:''}</td>
+        <td class="n">${o.published_at ? fmtDate(o.published_at) : '·'}</td>
+        <td>${o.published_url ? `<a href="${esc(o.published_url)}" target="_blank" rel="noopener">${esc(o.destination||'link')}</a>` : esc(o.destination||'·')}</td>
+        <td class="n">${engagement(o)}</td>
+        <td class="act"><button class="btn sm" data-review="${o.id}">${o.status==='draft'?'Review':'Open'}</button></td>
+      </tr>`).join('')}
+    </tbody></table></div>` : `<div class="empty">Nothing produced for this brand yet.</div>`}
+  </div>`;
+  app.querySelectorAll('[data-gen]').forEach(btn => btn.onclick = () => openDrawer(slug));
+  app.querySelectorAll('[data-produce]').forEach(btn => btn.onclick = () => openDrawer(slug, btn.dataset.produce));
+  app.querySelectorAll('[data-edit]').forEach(btn => btn.onclick = () => openIdea(slug, btn.dataset.edit));
+  app.querySelectorAll('[data-iv]').forEach(btn => btn.onclick = () => openInterview(slug, btn.dataset.iv));
+  app.querySelectorAll('[data-review]').forEach(btn => btn.onclick = () => openReview(slug, btn.dataset.review));
+  app.querySelectorAll('[data-gate]').forEach(sel => sel.onchange = async () => { try { const js = await api({action:'persona_update', brand_slug:slug, persona_slug:sel.dataset.gate, gate:sel.value}); STATE.kits[slug].personas = js.personas; } catch(e){ alert(e.message); } });
+  $('#addidea').onclick = () => openIdea(slug, null);
+  $('#brandcfg').onclick = () => openBrandSettings(slug);
+}
+function engagement(o){
+  const e = o.engagement||{}; const parts=[];
+  if(e.views!=null) parts.push(kfmt(e.views)+' views'); if(e.interactions!=null) parts.push(kfmt(e.interactions)+' interactions'); if(e.reach!=null) parts.push(kfmt(e.reach)+' reach');
+  return parts.length ? parts.join(' · ') : '<span style="color:var(--ink3)">·</span>';
+}
+
+/* ---------- author page ---------- */
+async function renderAuthor(slug, pslug){
+  const app = $('#app');
+  const kit = STATE.kits[slug]||{}; const p = (kit.personas||[]).find(x=>x.slug===pslug);
+  if(!p){ app.innerHTML = `<div class="wrap"><div class="crumb"><a href="#/">Content Desk</a> › <a href="#/brand/${slug}">${esc(NAMES[slug]||slug)}</a></div><div class="empty">No author with that name on this brand.</div></div>`; return; }
+  const {data: outs} = await sb.from('content_outputs').select('id,title,format,status,published_at,published_url,destination,engagement,created_at,interview_id').eq('brand_slug',slug).eq('persona_slug',pslug).order('created_at',{ascending:false}).limit(100);
+  app.innerHTML = `
+  <div class="wrap">
+    <div class="crumb"><a href="#/">Content Desk</a> › <a href="#/brand/${slug}">${esc(NAMES[slug]||slug)}</a> › ${esc(p.name)}</div>
+    <header class="top"><div><h1>${esc(p.name)}</h1><div class="sub">Writer persona for ${esc(NAMES[slug]||slug)}${p.updated_at?` · prompt last edited ${fmtDate(p.updated_at)} by ${esc(p.updated_by||'')}`:''}</div></div></header>
+    <div class="row3">
+      <div class="field"><label>Name</label><input id="pname" value="${esc(p.name)}"></div>
+      <div class="field"><label>Beat</label><input id="pbeat" value="${esc(p.beat||'')}"></div>
+      <div class="field"><label>Default gate</label><select id="pgate"><option value="review" ${(p.gate||'review')==='review'?'selected':''}>Review before publishing</option><option value="auto" ${p.gate==='auto'?'selected':''}>Autopublish</option></select></div>
+    </div>
+    <div class="field"><label>Persona prompt (the instructions this author writes under; the brand voice sits above it)</label><textarea id="psheet" class="tall">${esc(p.sheet||'')}</textarea></div>
+    <div><button class="btn primary" id="psave">Save persona</button> <span class="note" id="pstat"></span></div>
+    <h2 class="sec">Stories by ${esc(p.name)}</h2>
+    ${(outs||[]).length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Piece</th><th>Status</th><th>Published</th><th>Where</th><th>Engagement</th><th></th></tr></thead><tbody>
+      ${outs.map(o=>`<tr><td class="t"><b>${esc(o.title||'(untitled)')}</b><span>${esc(o.format)} · ${fmtDate(o.created_at)}</span></td><td>${outStatusChip(o)}</td><td class="n">${o.published_at?fmtDate(o.published_at):'·'}</td><td>${o.published_url?`<a href="${esc(o.published_url)}" target="_blank" rel="noopener">${esc(o.destination||'link')}</a>`:esc(o.destination||'·')}</td><td class="n">${engagement(o)}</td><td class="act"><button class="btn sm" data-review="${o.id}">Open</button></td></tr>`).join('')}
+    </tbody></table></div>` : `<div class="empty">Nothing written under this author yet.</div>`}
+  </div>`;
+  $('#psave').onclick = async () => {
+    $('#pstat').textContent = 'Saving…';
+    try { const js = await api({action:'persona_update', brand_slug:slug, persona_slug:pslug, name:$('#pname').value.trim(), beat:$('#pbeat').value.trim(), sheet:$('#psheet').value, gate:$('#pgate').value}); STATE.kits[slug].personas = js.personas; $('#pstat').textContent = 'Saved. New stories use it from now on.'; }
+    catch(e){ $('#pstat').textContent = 'Error: '+e.message; }
+  };
+  app.querySelectorAll('[data-review]').forEach(btn => btn.onclick = () => openReview(slug, btn.dataset.review));
+}
+
+/* ---------- drawers ---------- */
+function showDrawer(html){ const d=$('#drawer'); d.innerHTML = html; $('#dclose', d).onclick = closeDrawer; d.classList.add('open'); $('#scrim').classList.add('open'); return d; }
+function closeDrawer(){ $('#drawer').classList.remove('open'); $('#scrim').classList.remove('open'); }
+$('#scrim').onclick = closeDrawer;
+
+/* produce (existing create drawer, now idea-aware) */
+let DR = {brand:null, idea:null, persona:null, busy:false};
+function openDrawer(slug, ideaId){
+  const idea = ideaId ? (STATE.brandIdeas.find(i=>i.id===ideaId) || STATE.ideas.find(i=>i.id===ideaId)) : null;
+  DR = {brand:slug, idea: ideaId||null, persona: idea?.persona_slug || (STATE.kits[slug]?.personas||[])[0]?.slug || null, busy:false};
+  renderDrawer();
+}
+function renderDrawer(){
+  const slug = DR.brand; const kit = STATE.kits[slug] || {};
+  const personas = kit.personas || []; const readers = kit.reader_personas || [];
+  const ideas = (STATE.brandIdeas.length ? STATE.brandIdeas : STATE.ideas).filter(i=>i.brand_slug===slug);
+  const d = showDrawer(`
+    <header><h2>${esc(NAMES[slug]||slug)}</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="field"><label>Writer persona</label>
+        ${personas.length ? `<select id="persona">${personas.map(p=>`<option value="${esc(p.slug)}" ${p.slug===DR.persona?'selected':''}>${esc(p.name)}${p.beat?' · '+esc(p.beat):''}</option>`).join('')}</select>` : `<div class="note">No writer persona on this brand yet. The brand voice alone is used.</div>`}
+      </div>
+      ${readers.length ? `<div class="field"><label>Written for</label><div class="persona-list">${readers.map(r=>`<div class="persona"><b>${esc(r.name)}</b><p>${esc(r.summary||'')}</p></div>`).join('')}</div></div>` : ''}
+      <div class="field"><label>Pick an idea, or write your own</label>
+        <div class="ideas" id="ideas">
+          ${ideas.length ? ideas.map(i=>`<div class="idea ${DR.idea===i.id?'sel':''}" data-id="${i.id}"><b>${esc(i.title)}</b><p>${esc(i.angle||'')}</p>${i.source_name?`<small>${esc(i.source_name)}</small>`:''}${i.instructions?`<small> · has instructions</small>`:''}</div>`).join('') : `<div class="note">No ideas queued for this brand. Type one below.</div>`}
+        </div>
+      </div>
+      <div class="field"><label>Brief</label><textarea id="brief" placeholder="What is the post or article about? Facts, names, the hook. Leave blank to use the selected idea and its instructions as-is."></textarea></div>
+      <div class="field"><label>Outputs</label>
+        <div class="formats">
+          <label><input type="checkbox" name="fmt" value="social_set" checked> Social set (card + caption per platform)</label>
+          <label><input type="checkbox" name="fmt" value="article" ${DR.idea?'checked':''}> Article draft</label>
+        </div>
+      </div>
+      <div><button class="btn primary" id="go" ${DR.busy?'disabled':''}>${DR.busy?'Working…':'Generate'}</button> <span class="note" id="gstat"></span></div>
+      <div id="result"></div>
+    </div>`);
+  d.querySelectorAll('.idea').forEach(el => el.onclick = () => { DR.idea = DR.idea===el.dataset.id ? null : el.dataset.id; d.querySelectorAll('.idea').forEach(x=>x.classList.toggle('sel', x.dataset.id===DR.idea)); });
+  const ps = $('#persona', d); if(ps) ps.onchange = () => DR.persona = ps.value;
+  $('#go', d).onclick = generate;
+}
+async function generate(){
+  const d = $('#drawer');
+  const formats = [...d.querySelectorAll('input[name=fmt]:checked')].map(x=>x.value);
+  const brief = $('#brief', d).value.trim();
+  if(!DR.idea && !brief){ $('#gstat', d).textContent = 'Pick an idea or write a brief.'; return; }
+  if(!formats.length){ $('#gstat', d).textContent = 'Pick at least one output.'; return; }
+  DR.busy = true; $('#go', d).disabled = true; $('#gstat', d).textContent = 'Generating. The social set takes a few minutes to render; the article comes back here.';
+  try{
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(SB_URL + '/functions/v1/content-generate', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SB_ANON}, body: JSON.stringify({ brand_slug: DR.brand, persona_slug: DR.persona, idea_id: DR.idea, brief, formats, requested_by: STATE.user }) });
+    const js = await r.json();
+    if(!js.ok) throw new Error(js.error || 'failed');
+    let html = '';
+    if(js.article) html += `<div class="field"><label>Article draft (saved · ${js.article.gate==='auto'?'approved, autopublish':'waiting for review'})</label><div class="out">${esc(js.article.title)}\n\n${esc(js.article.body)}</div></div>`;
+    if(js.social) html += `<div class="note">Social set queued. The engine renders the cards within 15 minutes; Tier B brands land in the approval queue.</div>`;
+    $('#result', d).innerHTML = html;
+    $('#gstat', d).textContent = 'Done.';
+    if(DR.idea){ STATE.ideas = STATE.ideas.filter(i=>i.id!==DR.idea); STATE.brandIdeas = STATE.brandIdeas.filter(i=>i.id!==DR.idea); DR.idea=null; }
+    if(location.hash.startsWith('#/brand/')) route();
+  }catch(e){ $('#gstat', d).textContent = 'Error: ' + e.message; }
+  DR.busy = false; $('#go', d).disabled = false;
+}
+
+/* idea details / add */
+function openIdea(slug, ideaId){
+  const kit = STATE.kits[slug]||{}; const goals = kit.goals||[]; const personas = kit.personas||[];
+  const i = ideaId ? STATE.brandIdeas.find(x=>x.id===ideaId) : {contacts:[]};
+  const contacts = (i.contacts||[]).slice(); if(!contacts.length) contacts.push({});
+  const d = showDrawer(`
+    <header><h2>${ideaId?'Idea details':'Add idea'}</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="field"><label>Title</label><input id="ititle" value="${esc(i.title||'')}" placeholder="What is the story"></div>
+      <div class="field"><label>Angle</label><textarea id="iangle" placeholder="The take, the hook, why now">${esc(i.angle||'')}</textarea></div>
+      <div class="row3">
+        <div class="field"><label>Goal</label><select id="igoal"><option value="">unassigned</option>${goals.map(g=>`<option value="${esc(g.slug)}" ${i.goal_slug===g.slug?'selected':''}>${esc(g.label.split(':')[0])}</option>`).join('')}</select></div>
+        <div class="field"><label>Author</label><select id="ipersona"><option value="">brand voice</option>${personas.map(p=>`<option value="${esc(p.slug)}" ${i.persona_slug===p.slug?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Happens or opens</label><input id="idate" type="date" value="${esc(i.event_date||'')}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Source name</label><input id="isrc" value="${esc(i.source_name||'')}"></div>
+        <div class="field"><label>Source link</label><input id="isurl" value="${esc(i.source_url||'')}"></div>
+      </div>
+      <div class="field"><label>Instructions and material (press release, facts, quotes to use, what to avoid)</label><textarea id="iinstr" class="tall" style="min-height:160px">${esc(i.instructions||'')}</textarea></div>
+      <div class="field"><label>Contacts (name, email, role)</label><div class="contacts" id="contacts">${contacts.map(c=>contactRow(c)).join('')}</div><div style="margin-top:6px"><button class="btn sm" id="addc">Add contact</button></div></div>
+      <div class="field"><label>Gate for this story</label><select id="igate"><option value="">author default</option><option value="review" ${i.gate==='review'?'selected':''}>review first</option><option value="auto" ${i.gate==='auto'?'selected':''}>autopublish</option></select></div>
+      <div style="display:flex;gap:8px;align-items:center"><button class="btn primary" id="isave">Save</button>${ideaId?`<button class="btn" id="idrop">Drop idea</button>`:''}<span class="note" id="istat"></span></div>
+    </div>`);
+  $('#addc', d).onclick = () => { $('#contacts', d).insertAdjacentHTML('beforeend', contactRow({})); wireContacts(d); };
+  wireContacts(d);
+  $('#isave', d).onclick = async () => {
+    $('#istat', d).textContent = 'Saving…';
+    const cs = [...d.querySelectorAll('.contact')].map(r => ({name:$('.cn',r).value.trim(), email:$('.ce',r).value.trim(), role:$('.cr',r).value.trim()})).filter(c=>c.name||c.email);
+    try {
+      const body = {action:'idea_upsert', id: ideaId||undefined, brand_slug:slug, title:$('#ititle',d).value.trim(), angle:$('#iangle',d).value.trim(), goal_slug:$('#igoal',d).value||null, persona_slug:$('#ipersona',d).value||null, event_date:$('#idate',d).value||null, source_name:$('#isrc',d).value.trim()||null, source_url:$('#isurl',d).value.trim()||null, instructions:$('#iinstr',d).value, contacts:cs, gate:$('#igate',d).value||null};
+      if(!body.title){ $('#istat', d).textContent = 'Title needed.'; return; }
+      await api(body); closeDrawer(); route();
+    } catch(e){ $('#istat', d).textContent = 'Error: '+e.message; }
+  };
+  const drop = $('#idrop', d); if(drop) drop.onclick = async () => { if(!confirm('Drop this idea?')) return; try { await api({action:'idea_status', id:ideaId, status:'dropped'}); closeDrawer(); route(); } catch(e){ $('#istat', d).textContent = 'Error: '+e.message; } };
+}
+function contactRow(c){ return `<div class="contact"><input class="cn" placeholder="Name" value="${esc(c.name||'')}"><input class="ce" placeholder="Email" value="${esc(c.email||'')}"><input class="cr" placeholder="Role" value="${esc(c.role||'')}"><button class="btn sm cx" type="button">×</button></div>`; }
+function wireContacts(d){ d.querySelectorAll('.cx').forEach(b => b.onclick = () => b.closest('.contact').remove()); }
+
+/* interview */
+function openInterview(slug, ideaId){
+  const i = STATE.brandIdeas.find(x=>x.id===ideaId); const kit = STATE.kits[slug]||{};
+  let iv = ivFor(ideaId);
+  const contacts = (i.contacts||[]).filter(c=>c.email);
+  const d = showDrawer(`
+    <header><h2>Interview</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="kv"><span><b>${esc(i.title)}</b></span><span>from ${esc(kit.outreach_email||'no outreach address set')}</span></div>
+      <div id="ivbody"></div>
+    </div>`);
+  const box = $('#ivbody', d);
+  function paint(){
+    if(!iv){
+      box.innerHTML = `
+        <div class="field"><label>Who to ask</label>
+          ${contacts.length ? `<select id="cpick">${contacts.map((c,k)=>`<option value="${k}">${esc(c.name||'')} · ${esc(c.email)}${c.role?' · '+esc(c.role):''}</option>`).join('')}<option value="-1">someone else</option></select>` : '<div class="note">No contacts on this idea yet. Type one below.</div>'}
+        </div>
+        <div class="row3"><div class="field"><label>Name</label><input id="cname" value="${esc(contacts[0]?.name||'')}"></div><div class="field"><label>Email</label><input id="cemail" value="${esc(contacts[0]?.email||'')}"></div><div class="field"><label>Role</label><input id="crole" value="${esc(contacts[0]?.role||'')}"></div></div>
+        <div><button class="btn primary" id="draft">Draft the email</button> <span class="note" id="ivstat"></span></div>`;
+      const pick = $('#cpick', box); if(pick) pick.onchange = () => { const c = contacts[Number(pick.value)] || {}; $('#cname',box).value=c.name||''; $('#cemail',box).value=c.email||''; $('#crole',box).value=c.role||''; };
+      $('#draft', box).onclick = async () => {
+        const email = $('#cemail',box).value.trim(); if(!email){ $('#ivstat',box).textContent='Email needed.'; return; }
+        $('#ivstat',box).textContent = 'Drafting in the brand voice…'; $('#draft',box).disabled = true;
+        try { const js = await api({action:'interview_draft', idea_id: ideaId, contact_name:$('#cname',box).value.trim(), contact_email: email, contact_role:$('#crole',box).value.trim()}); iv = js.interview; STATE.interviews.unshift(iv); paint(); }
+        catch(e){ $('#ivstat',box).textContent = 'Error: '+e.message; $('#draft',box).disabled = false; }
+      };
+      return;
+    }
+    const sent = iv.status !== 'draft';
+    box.innerHTML = `
+      <div class="kv"><span>to <b>${esc(iv.contact_name||'')}</b> ${esc(iv.contact_email)}</span>${iv.sent_at?`<span>asked ${fmtDate(iv.sent_at)}</span>`:''}${iv.replied_at?`<span>replied ${fmtDate(iv.replied_at)}</span>`:''}<span>${ivChip(iv)}</span></div>
+      <div class="field"><label>Subject</label><input id="ivsub" value="${esc(iv.subject||'')}" ${sent?'disabled':''}></div>
+      <div class="field"><label>Email</label><textarea id="ivtext" class="tall" ${sent?'disabled':''}>${esc(iv.email_body||'')}</textarea></div>
+      ${iv.reply_text ? `<div class="field"><label>Their reply</label><div class="out">${esc(iv.reply_text)}</div></div>` : ''}
+      ${iv.output_id ? `<div><button class="btn primary" id="ivopen">Open the draft story</button></div>` : ''}
+      ${!sent ? `<div><button class="btn primary" id="ivsend">Send</button> <button class="btn" id="ivredo">Start over</button> <span class="note" id="ivstat"></span></div>` : `<div class="note">${iv.status==='sent'?'Waiting on a reply. The desk checks the thread every 20 minutes and drafts the story the moment it lands.':''}</div>`}`;
+    const send = $('#ivsend', box); if(send) send.onclick = async () => {
+      $('#ivstat',box).textContent = 'Sending…'; send.disabled = true;
+      try { await api({action:'interview_update', id:iv.id, subject:$('#ivsub',box).value, email_body:$('#ivtext',box).value}); await api({action:'interview_send', id:iv.id}); closeDrawer(); route(); }
+      catch(e){ $('#ivstat',box).textContent = 'Error: '+e.message; send.disabled = false; }
+    };
+    const redo = $('#ivredo', box); if(redo) redo.onclick = () => { STATE.interviews = STATE.interviews.filter(x=>x.id!==iv.id); iv = null; paint(); };
+    const op = $('#ivopen', box); if(op) op.onclick = () => openReview(slug, iv.output_id);
+  }
+  paint();
+}
+
+/* piece review / publish */
+async function openReview(slug, outId){
+  const {data: o} = await sb.from('content_outputs').select('*').eq('id', outId).single();
+  if(!o) return;
+  const body = o.body||{}; const kit = STATE.kits[slug]||{}; const dest = kit.web_destination||{};
+  const d = showDrawer(`
+    <header><h2>${esc(o.title||'(untitled)')}</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="kv"><span>by <b>${esc(personaName(slug,o.persona_slug))}</b></span><span>${outStatusChip(o)}</span>${o.published_at?`<span>published ${fmtDate(o.published_at)}</span>`:''}${o.gate?`<span>gate: ${esc(o.gate)}</span>`:''}</div>
+      <div class="field"><label>Title</label><input id="otitle" value="${esc(body.title||o.title||'')}"></div>
+      ${body.dek!=null?`<div class="field"><label>Dek</label><input id="odek" value="${esc(body.dek||'')}"></div>`:''}
+      <div class="field"><label>Body</label><textarea id="obody" class="tall" style="min-height:360px">${esc(body.body||'')}</textarea></div>
+      <div><button class="btn" id="osave">Save edits</button> <span class="note" id="ostat"></span></div>
+      <div class="field"><label>Publish</label>
+        <div class="row2"><input id="ourl" placeholder="Link to the live piece (paste after it is up)" value="${esc(o.published_url||'')}"><input id="odest" placeholder="Where (site, Cityverse…)" value="${esc(o.destination||dest.label||'')}"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          ${o.status==='draft'?`<button class="btn" id="oapprove">Approve</button>`:''}
+          ${o.status!=='published'?`<button class="btn primary" id="opub">Mark published${o.interview_id?' and thank the source':''}</button>`:''}
+          ${o.status!=='rejected'&&o.status!=='published'?`<button class="btn" id="oreject">Reject</button>`:''}
+        </div>
+        <div class="note" style="margin-top:6px">Publishing to the site itself goes through each brand's destination once it is wired; until then paste the live link here so the brand page tracks it${o.interview_id?' and the thank-you goes out':''}.</div>
+      </div>
+    </div>`);
+  $('#osave', d).onclick = async () => { $('#ostat',d).textContent='Saving…'; try { await api({action:'output_update', id:o.id, title:$('#otitle',d).value, body:$('#obody',d).value, dek:$('#odek',d)?.value}); $('#ostat',d).textContent='Saved.'; } catch(e){ $('#ostat',d).textContent='Error: '+e.message; } };
+  const st = async (status) => { $('#ostat',d).textContent='Working…'; try { await api({action:'output_update', id:o.id, title:$('#otitle',d).value, body:$('#obody',d).value, dek:$('#odek',d)?.value}); const js = await api({action:'output_status', id:o.id, status, published_url:$('#ourl',d).value.trim()||null, destination:$('#odest',d).value.trim()||null}); if(js.thanks && js.thanks.error) alert('Published, but the thank-you did not send: '+js.thanks.error); closeDrawer(); route(); } catch(e){ $('#ostat',d).textContent='Error: '+e.message; } };
+  const a=$('#oapprove',d); if(a) a.onclick=()=>st('approved');
+  const p=$('#opub',d); if(p) p.onclick=()=>{ if(!$('#ourl',d).value.trim() && !confirm('No live link pasted. Mark published anyway?')) return; st('published'); };
+  const r=$('#oreject',d); if(r) r.onclick=()=>st('rejected');
+}
+
+/* brand settings */
+function openBrandSettings(slug){
+  const kit = STATE.kits[slug]||{}; const dest = kit.web_destination||{};
+  const d = showDrawer(`
+    <header><h2>${esc(NAMES[slug]||slug)} settings</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="field"><label>Outreach email (interview requests and thank-yous send from this address; it must be a send-as address on the desk's Google account)</label><input id="bmail" value="${esc(kit.outreach_email||'')}"></div>
+      <div class="field"><label>Main web presence (link used in outreach)</label><input id="bsite" value="${esc(kit.site_url||'')}"></div>
+      <div class="field"><label>Article destination label</label><input id="bdest" value="${esc(dest.label||'')}" placeholder="e.g. dtspfun.com, Cityverse"></div>
+      <div><button class="btn primary" id="bsave">Save</button> <span class="note" id="bstat"></span></div>
+    </div>`);
+  $('#bsave', d).onclick = async () => { $('#bstat',d).textContent='Saving…'; try { const wd = {...dest, label:$('#bdest',d).value.trim()}; await api({action:'brand_update', brand_slug:slug, outreach_email:$('#bmail',d).value.trim()||null, site_url:$('#bsite',d).value.trim()||null, web_destination:wd}); STATE.kits[slug] = {...kit, outreach_email:$('#bmail',d).value.trim()||null, site_url:$('#bsite',d).value.trim()||null, web_destination:wd}; closeDrawer(); route(); } catch(e){ $('#bstat',d).textContent='Error: '+e.message; } };
+}
+
+/* ---------- load ---------- */
+async function load(){
+  const [{data: status, error: e1}, {data: ideas}, {data: kits}, {data: outputs}, {data: interviews}] = await Promise.all([
+    sb.rpc('content_dashboard_status'),
+    sb.from('content_ideas').select('id,brand_slug,persona_slug,title,angle,lane,source_name,source_url,formats,goal_slug,event_date,created_at,instructions,contacts,gate').eq('status','ready').order('created_at',{ascending:false}),
+    sb.from('brand_kits').select('brand_slug,logo_assets,personas,reader_personas,accent_hex,goals,outreach_email,site_url,web_destination'),
+    sb.from('content_outputs').select('id,idea_id,brand_slug,persona_slug,format,title,status,gate,published_at,published_url,destination,engagement,interview_id,created_at').order('created_at',{ascending:false}).limit(300),
+    sb.from('content_interviews').select('id,idea_id,brand_slug,status,sent_at,replied_at,output_id,contact_name,contact_email,created_at'),
+  ]);
+  if(e1){ $('#app').innerHTML = `<div class="gate"><h1>Content Desk</h1><p>Could not load: ${esc(e1.message)}</p></div>`; return; }
+  STATE.status = status || []; STATE.ideas = ideas || []; STATE.outputs = outputs || []; STATE.interviews = interviews || [];
+  STATE.kits = Object.fromEntries((kits||[]).map(k=>[k.brand_slug,k]));
+  route();
+}
+async function gate(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){
+    $('#app').innerHTML = `<div class="gate"><h1>Content Desk</h1><p>Sign in with your stpete.co Google account.</p><button class="btn primary" id="login">Sign in with Google</button></div>`;
+    $('#login').onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + window.location.pathname, queryParams:{ hd:'stpete.co', prompt:'select_account' } } });
+    return;
+  }
+  const { data: me } = await sb.from('team_members').select('email, role').maybeSingle();
+  if(!me){ $('#app').innerHTML = `<div class="gate"><h1>Content Desk</h1><p>${esc(session.user.email)} is not on the team list yet.</p><button class="btn" id="out">Sign out</button></div>`; $('#out').onclick = async()=>{ await sb.auth.signOut(); location.reload(); }; return; }
+  STATE.user = me.email;
+  await load();
+}
+sb.auth.onAuthStateChange((ev) => { if(ev==='SIGNED_IN' || ev==='INITIAL_SESSION') gate(); });
+</script>
+</body>
+</html>
