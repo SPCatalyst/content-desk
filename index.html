@@ -211,13 +211,14 @@ function render(){
     </header>
     <div class="toolbar">
       ${['all','red','yellow','green'].map(f=>`<button data-f="${f}" class="${STATE.filter===f?'on':''}">${f==='all'?'All brands':f==='red'?'Behind':f==='yellow'?'Slipping':'On schedule'}</button>`).join('')}
-      <span class="note" style="margin-left:auto">Yellow at 1.5x the expected gap, red at 2x. Ideas: ${STATE.ideas.length} ready. Click a brand for its page.</span>
+      <button id="askscout-all" style="margin-left:auto">Ask the scout</button><span class="note">Yellow at 1.5x the expected gap, red at 2x. Ideas: ${STATE.ideas.length} ready. Click a brand for its page.</span>
     </div>
     <div class="grid">
       ${shown.map(b => card(b, byBrand[b])).join('')}
     </div>
   </div>`;
-  app.querySelectorAll('.toolbar button').forEach(btn => btn.onclick = () => { STATE.filter = btn.dataset.f; render(); });
+  app.querySelectorAll('.toolbar button[data-f]').forEach(btn => btn.onclick = () => { STATE.filter = btn.dataset.f; render(); });
+  $('#askscout-all').onclick = () => openScout(null);
   app.querySelectorAll('[data-gen]').forEach(btn => btn.onclick = () => openDrawer(btn.dataset.gen));
 }
 
@@ -324,7 +325,7 @@ async function renderBrand(slug){
     </header>
     <div class="goals">${goalCards || '<div class="empty">No goals set for this brand yet.</div>'}</div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="askscout">Ask the scout</button> <button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
     ${ideas.length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Idea</th><th>Landed</th><th>Happens</th><th>Goal</th><th>Author</th><th>Interview</th><th></th></tr></thead><tbody>
       ${ideas.map(i => { const d = daysSince(i.created_at); const iv = ivFor(i.id); return `<tr>
         <td class="t"><b>${esc(i.title)}</b><span>${esc(i.angle||'')}</span>${i.source_url?` <a class="note" href="${esc(i.source_url)}" target="_blank" rel="noopener">${esc(i.source_name||'source')}</a>`:''}${(i.contacts||[]).length?`<div class="note">${(i.contacts||[]).map(c=>esc(c.name||c.email)).join(', ')}</div>`:''}</td>
@@ -357,6 +358,7 @@ async function renderBrand(slug){
   app.querySelectorAll('[data-review]').forEach(btn => btn.onclick = () => openReview(slug, btn.dataset.review));
   app.querySelectorAll('[data-gate]').forEach(sel => sel.onchange = async () => { try { const js = await api({action:'persona_update', brand_slug:slug, persona_slug:sel.dataset.gate, gate:sel.value}); STATE.kits[slug].personas = js.personas; } catch(e){ alert(e.message); } });
   $('#addidea').onclick = () => openIdea(slug, null);
+  $('#askscout').onclick = () => openScout(slug);
   $('#brandcfg').onclick = () => openBrandSettings(slug);
 }
 function engagement(o){
@@ -576,6 +578,28 @@ async function openReview(slug, outId){
   const a=$('#oapprove',d); if(a) a.onclick=()=>st('approved');
   const p=$('#opub',d); if(p) p.onclick=()=>{ if(!$('#ourl',d).value.trim() && !confirm('No live link pasted. Mark published anyway?')) return; st('published'); };
   const r=$('#oreject',d); if(r) r.onclick=()=>st('rejected');
+}
+
+/* ask the scout */
+async function openScout(slug){
+  const {data: reqs} = await sb.from('content_scout_requests').select('topic,status,created_at,result,brand_slug').order('created_at',{ascending:false}).limit(8);
+  const d = showDrawer(`<header><h2>Ask the scout</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="note">Type a topic. The scout researches it on the web and files sourced ideas${slug?' for '+esc(NAMES[slug]||slug):' across the brands it fits'} within a few minutes.</div>
+      <div class="field"><label>Topic</label><input id="sctopic" placeholder="e.g. new rooftop bars opening downtown this winter"></div>
+      <div class="field"><label>Notes for the scout (optional)</label><textarea id="scnotes" placeholder="Angle, names to include, what to avoid, or paste a press release to work from"></textarea></div>
+      <div><button class="btn primary" id="scgo">Send to the scout</button> <span class="note" id="scstat"></span></div>
+      ${(reqs||[]).length?`<div class="field"><label>Recent requests</label><div class="persona-list">${reqs.map(r=>`<div class="persona"><b>${esc(r.topic)}</b><p>${esc(r.brand_slug?(NAMES[r.brand_slug]||r.brand_slug):'all brands')} · ${esc(r.status)}${r.result&&r.result.ideas!=null?' · '+r.result.ideas+' ideas':''} · ${fmtDate(r.created_at)}</p></div>`).join('')}</div></div>`:''}
+    </div>`);
+  $('#scgo', d).onclick = async () => {
+    const topic = $('#sctopic', d).value.trim();
+    if(!topic){ $('#scstat', d).textContent = 'Topic needed.'; return; }
+    $('#scstat', d).textContent = 'Sending…';
+    const {error} = await sb.from('content_scout_requests').insert({brand_slug: slug||null, topic, notes: $('#scnotes', d).value.trim()||null, requested_by: STATE.user});
+    if(error){ $('#scstat', d).textContent = 'Error: '+error.message; return; }
+    $('#scstat', d).textContent = 'Sent. Ideas land on the brand page in a few minutes.';
+    $('#sctopic', d).value = '';
+  };
 }
 
 /* brand settings */
