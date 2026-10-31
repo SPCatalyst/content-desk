@@ -325,7 +325,7 @@ async function renderBrand(slug){
     </header>
     <div class="goals">${goalCards || '<div class="empty">No goals set for this brand yet.</div>'}</div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="askscout">Ask the scout</button> <button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="findnow">Find ideas now</button> <button class="btn" id="askscout">Ask the scout</button> <button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
     ${ideas.length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Idea</th><th>Landed</th><th>Happens</th><th>Goal</th><th>Author</th><th>Interview</th><th></th></tr></thead><tbody>
       ${ideas.map(i => { const d = daysSince(i.created_at); const iv = ivFor(i.id); return `<tr>
         <td class="t"><b>${esc(i.title)}</b><span>${esc(i.angle||'')}</span>${i.source_url?` <a class="note" href="${esc(i.source_url)}" target="_blank" rel="noopener">${esc(i.source_name||'source')}</a>`:''}${(i.contacts||[]).length?`<div class="note">${(i.contacts||[]).map(c=>esc(c.name||c.email)).join(', ')}</div>`:''}</td>
@@ -334,7 +334,7 @@ async function renderBrand(slug){
         <td>${i.goal_slug ? `<span class="chip">${esc(goalLabel(slug,i.goal_slug))}</span>` : '<span class="chip" style="border-style:dashed;color:var(--ink3)">unassigned</span>'}</td>
         <td><a href="#/author/${slug}/${esc(i.persona_slug||'')}" style="text-decoration:none">${esc(personaName(slug,i.persona_slug))}</a>${i.gate?`<div><span class="chip ${i.gate}">${i.gate==='auto'?'autopublish':'review'}</span></div>`:''}</td>
         <td>${ivChip(iv)}</td>
-        <td class="act"><button class="btn sm" data-edit="${i.id}">Details</button><button class="btn sm" data-iv="${i.id}">${iv?'Interview':'Interview'}</button><button class="btn sm primary" data-produce="${i.id}">Produce</button></td>
+        <td class="act"><button class="btn sm" data-drop="${i.id}" title="Remove this idea from the list">✕</button><button class="btn sm" data-edit="${i.id}">Details</button><button class="btn sm" data-iv="${i.id}">${iv?'Interview':'Interview'}</button><button class="btn sm primary" data-produce="${i.id}">Produce</button></td>
       </tr>`; }).join('')}
     </tbody></table></div>` : `<div class="empty">No ideas queued. Add one, or wait for the scouts.</div>`}
 
@@ -354,11 +354,13 @@ async function renderBrand(slug){
   app.querySelectorAll('[data-gen]').forEach(btn => btn.onclick = () => openDrawer(slug));
   app.querySelectorAll('[data-produce]').forEach(btn => btn.onclick = () => openDrawer(slug, btn.dataset.produce));
   app.querySelectorAll('[data-edit]').forEach(btn => btn.onclick = () => openIdea(slug, btn.dataset.edit));
+  app.querySelectorAll('[data-drop]').forEach(btn => btn.onclick = async () => { btn.disabled = true; try { await api({action:'idea_status', id: btn.dataset.drop, status:'dropped'}); btn.closest('tr').remove(); STATE.brandIdeas = STATE.brandIdeas.filter(i=>i.id!==btn.dataset.drop); STATE.ideas = STATE.ideas.filter(i=>i.id!==btn.dataset.drop); } catch(e){ alert(e.message); btn.disabled = false; } });
   app.querySelectorAll('[data-iv]').forEach(btn => btn.onclick = () => openInterview(slug, btn.dataset.iv));
   app.querySelectorAll('[data-review]').forEach(btn => btn.onclick = () => openReview(slug, btn.dataset.review));
   app.querySelectorAll('[data-gate]').forEach(sel => sel.onchange = async () => { try { const js = await api({action:'persona_update', brand_slug:slug, persona_slug:sel.dataset.gate, gate:sel.value}); STATE.kits[slug].personas = js.personas; } catch(e){ alert(e.message); } });
   $('#addidea').onclick = () => openIdea(slug, null);
   $('#askscout').onclick = () => openScout(slug);
+  $('#findnow').onclick = async () => { const b = $('#findnow'); b.disabled = true; b.textContent = 'Scout sent…'; const {error} = await sb.from('content_scout_requests').insert({brand_slug: slug, topic: 'Fresh ideas', notes: 'Find ideas now button', requested_by: STATE.user}); b.textContent = error ? 'Error: '+error.message : 'Scout working, back in a few minutes'; };
   $('#brandcfg').onclick = () => openBrandSettings(slug);
 }
 function engagement(o){
