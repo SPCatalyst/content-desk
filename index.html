@@ -454,7 +454,7 @@ async function generate(){
     const js = await r.json();
     if(!js.ok) throw new Error(js.error || 'failed');
     let html = '';
-    if(js.article) html += `<div class="field"><label>Article draft (saved · ${js.article.gate==='auto'?'approved, autopublish':'waiting for review'})</label><div class="out">${esc(js.article.title)}\n\n${esc(js.article.body)}</div></div>`;
+    if(js.article) html += `<div class="field"><label>Article draft (saved · ${js.article.gate==='auto'?'approved, autopublish':'waiting for review'})</label><div class="out">${esc(js.article.title)}\n\n${esc(js.article.body)}</div></div>${footer(js.article)}`;
     if(js.social) html += `<div class="note">Social set queued. The engine renders the cards within 15 minutes; Tier B brands land in the approval queue.</div>`;
     $('#result', d).innerHTML = html;
     $('#gstat', d).textContent = 'Done.';
@@ -565,6 +565,7 @@ async function openReview(slug, outId){
       ${body.dek!=null?`<div class="field"><label>Dek</label><input id="odek" value="${esc(body.dek||'')}"></div>`:''}
       <div class="field"><label>Body</label><textarea id="obody" class="tall" style="min-height:360px">${esc(body.body||'')}</textarea></div>
       <div><button class="btn" id="osave">Save edits</button> <span class="note" id="ostat"></span></div>
+      ${footer(body)}
       <div class="field"><label>Publish</label>
         <div class="row2"><input id="ourl" placeholder="Link to the live piece (paste after it is up)" value="${esc(o.published_url||'')}"><input id="odest" placeholder="Where (site, Cityverse…)" value="${esc(o.destination||dest.label||'')}"></div>
         <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
@@ -602,6 +603,21 @@ async function openScout(slug){
     $('#scstat', d).textContent = 'Sent. Ideas land on the brand page in a few minutes.';
     $('#sctopic', d).value = '';
   };
+}
+
+/* article footer: word count, tags, image options, style pass */
+function footer(a){
+  if(!a) return '';
+  const tags = (a.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join(' ');
+  const imgs = (a.images||[]).map((im,i)=>`<div class="persona"><b>Option ${i+1} · ${esc(im.source||'')}</b><p>${esc(im.option||'')}</p><p class="note">Caption: ${esc(im.caption||'')}</p></div>`).join('');
+  const fixes = (a.style_fixes||[]);
+  const left = (a.style_hits_remaining||[]);
+  return `<div class="field"><label>Footer</label>
+    <div class="kv"><span><b>${a.word_count||0}</b> words</span>${a.seo_title?`<span>SEO title: <b>${esc(a.seo_title)}</b></span>`:''}</div>
+    ${tags?`<div style="margin-top:8px"><div class="note" style="margin-bottom:4px">Proposed tags</div><div class="chips">${tags}</div></div>`:''}
+    ${imgs?`<div style="margin-top:10px"><div class="note" style="margin-bottom:4px">Image options</div><div class="persona-list">${imgs}</div></div>`:''}
+    <div style="margin-top:10px"><div class="note" style="margin-bottom:4px">House style pass</div>${fixes.length?`<ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--ink2)">${fixes.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:'<span class="chip ok">clean on first draft</span>'}${left.length?`<div style="margin-top:6px"><span class="chip warn">still flagged: ${esc(left.join(', '))}</span></div>`:''}</div>
+  </div>`;
 }
 
 /* brand settings */
