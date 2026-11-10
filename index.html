@@ -125,6 +125,7 @@ table.list td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-ali
 table.list tr:last-child td{border-bottom:none}
 table.list td.t b{display:block;font-size:14.5px;font-weight:600}
 table.list td.t span{color:var(--ink2);font-size:12.5px}
+table.list tr.fresh td{background:rgba(120,220,140,.07);box-shadow:inset 3px 0 0 #9fe8bf}
 table.list td.n{white-space:nowrap;color:var(--ink2);font-variant-numeric:tabular-nums}
 table.list td.n.old{color:var(--yellow)}
 table.list td.n.stale{color:var(--red)}
@@ -327,8 +328,8 @@ async function renderBrand(slug){
 
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="sec">Ideas</h2><div><button class="btn" id="findnow">Find ideas now</button> <button class="btn" id="askscout">Ask the scout</button> <button class="btn" id="addidea">Add idea</button> <button class="btn primary" data-gen="${slug}">Create from brief</button></div></div>
     ${ideas.length ? `<div class="tblwrap"><table class="list"><thead><tr><th>Idea</th><th>Landed</th><th>Happens</th><th>Goal</th><th>Author</th><th>Interview</th><th></th></tr></thead><tbody>
-      ${ideas.map(i => { const d = daysSince(i.created_at); const iv = ivFor(i.id); return `<tr>
-        <td class="t"><b>${esc(i.title)}</b><span>${esc(i.angle||'')}</span>${i.source_url?` <a class="note" href="${esc(i.source_url)}" target="_blank" rel="noopener">${esc(i.source_name||'source')}</a>`:''}${(i.contacts||[]).length?`<div class="note">${(i.contacts||[]).map(c=>esc(c.name||c.email)).join(', ')}</div>`:''}</td>
+      ${ideas.map(i => { const d = daysSince(i.created_at); const iv = ivFor(i.id); const fresh = STATE.freshSince && i.created_at > STATE.freshSince; return `<tr class="${fresh?'fresh':''}">
+        <td class="t"><b>${fresh?'<span class="chip ok" style="margin-right:6px">new</span>':''}${esc(i.title)}</b><span>${esc(i.angle||'')}</span>${i.source_url?` <a class="note" href="${esc(i.source_url)}" target="_blank" rel="noopener">${esc(i.source_name||'source')}</a>`:''}${(i.contacts||[]).length?`<div class="note">${(i.contacts||[]).map(c=>esc(c.name||c.email)).join(', ')}</div>`:''}</td>
         <td class="n ${d>14?'stale':d>7?'old':''}" title="${esc(i.created_at)}">${Math.round(d)}d ago</td>
         <td class="n">${i.event_date ? fmtDay(i.event_date) : '<span style="color:var(--ink3)">·</span>'}</td>
         <td>${i.goal_slug ? `<span class="chip">${esc(goalLabel(slug,i.goal_slug))}</span>` : '<span class="chip" style="border-style:dashed;color:var(--ink3)">unassigned</span>'}</td>
@@ -352,7 +353,7 @@ async function renderBrand(slug){
     </tbody></table></div>` : `<div class="empty">Nothing produced for this brand yet.</div>`}
   </div>`;
   app.querySelectorAll('[data-gen]').forEach(btn => btn.onclick = () => openDrawer(slug));
-  app.querySelectorAll('[data-produce]').forEach(btn => btn.onclick = () => openDrawer(slug, btn.dataset.produce));
+  app.querySelectorAll('[data-produce]').forEach(btn => btn.onclick = () => produceIdea(slug, btn.dataset.produce));
   app.querySelectorAll('[data-edit]').forEach(btn => btn.onclick = () => openIdea(slug, btn.dataset.edit));
   app.querySelectorAll('[data-drop]').forEach(btn => btn.onclick = async () => { btn.disabled = true; try { await api({action:'idea_status', id: btn.dataset.drop, status:'dropped'}); btn.closest('tr').remove(); STATE.brandIdeas = STATE.brandIdeas.filter(i=>i.id!==btn.dataset.drop); STATE.ideas = STATE.ideas.filter(i=>i.id!==btn.dataset.drop); } catch(e){ alert(e.message); btn.disabled = false; } });
   app.querySelectorAll('[data-iv]').forEach(btn => btn.onclick = () => openInterview(slug, btn.dataset.iv));
@@ -360,7 +361,7 @@ async function renderBrand(slug){
   app.querySelectorAll('[data-gate]').forEach(sel => sel.onchange = async () => { try { const js = await api({action:'persona_update', brand_slug:slug, persona_slug:sel.dataset.gate, gate:sel.value}); STATE.kits[slug].personas = js.personas; } catch(e){ alert(e.message); } });
   $('#addidea').onclick = () => openIdea(slug, null);
   $('#askscout').onclick = () => openScout(slug);
-  $('#findnow').onclick = async () => { const b = $('#findnow'); b.disabled = true; b.textContent = 'Scout sent…'; const {error} = await sb.from('content_scout_requests').insert({brand_slug: slug, topic: 'Fresh ideas', notes: 'Find ideas now button', requested_by: STATE.user}); b.textContent = error ? 'Error: '+error.message : 'Scout working, back in a few minutes'; };
+  $('#findnow').onclick = async () => { const b = $('#findnow'); b.disabled = true; b.textContent = 'Scout sent…'; const {data: row, error} = await sb.from('content_scout_requests').insert({brand_slug: slug, topic: 'Fresh ideas', notes: 'Find ideas now button', requested_by: STATE.user}).select('id,created_at').single(); if(error){ b.textContent = 'Error: '+error.message; return; } watchScout(row.id, slug, row.created_at, msg => { const x = $('#findnow'); if(x) x.textContent = msg.startsWith('Scout working') || msg.startsWith('Still') ? 'Scout working…' : msg; }); };
   $('#brandcfg').onclick = () => openBrandSettings(slug);
 }
 function engagement(o){
@@ -441,13 +442,30 @@ function renderDrawer(){
   const ps = $('#persona', d); if(ps) ps.onchange = () => DR.persona = ps.value;
   $('#go', d).onclick = generate;
 }
-async function generate(){
+/* Produce: one click from the idea row straight into generation, no re-pick */
+function produceIdea(slug, ideaId){
+  const idea = STATE.brandIdeas.find(i=>i.id===ideaId) || STATE.ideas.find(i=>i.id===ideaId);
+  if(!idea) return;
+  const kit = STATE.kits[slug] || {};
+  DR = {brand:slug, idea: ideaId, persona: idea.persona_slug || (kit.personas||[])[0]?.slug || null, busy:false};
+  const d = showDrawer(`
+    <header><h2>${esc(NAMES[slug]||slug)}</h2><button class="btn" id="dclose">Close</button></header>
+    <div class="body">
+      <div class="idea sel"><b>${esc(idea.title)}</b><p>${esc(idea.angle||'')}</p>${idea.source_name?`<small>${esc(idea.source_name)}</small>`:''}</div>
+      <div class="kv"><span>writes as <b>${esc(personaName(slug, DR.persona))}</b></span><span>social set + article draft</span></div>
+      <div><span class="note" id="gstat"></span></div>
+      <div id="result"></div>
+    </div>`);
+  generate({formats:['social_set','article'], brief:''});
+}
+async function generate(opts){
   const d = $('#drawer');
-  const formats = [...d.querySelectorAll('input[name=fmt]:checked')].map(x=>x.value);
-  const brief = $('#brief', d).value.trim();
+  const formats = opts?.formats || [...d.querySelectorAll('input[name=fmt]:checked')].map(x=>x.value);
+  const brief = opts ? (opts.brief||'') : $('#brief', d).value.trim();
+  const go = $('#go', d);
   if(!DR.idea && !brief){ $('#gstat', d).textContent = 'Pick an idea or write a brief.'; return; }
   if(!formats.length){ $('#gstat', d).textContent = 'Pick at least one output.'; return; }
-  DR.busy = true; $('#go', d).disabled = true; $('#gstat', d).textContent = 'Generating. The social set takes a few minutes to render; the article comes back here.';
+  DR.busy = true; if(go) go.disabled = true; $('#gstat', d).textContent = 'Generating. The social set takes a few minutes to render; the article comes back here.';
   try{
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch(SB_URL + '/functions/v1/content-generate', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SB_ANON}, body: JSON.stringify({ brand_slug: DR.brand, persona_slug: DR.persona, idea_id: DR.idea, brief, formats, requested_by: STATE.user }) });
@@ -461,7 +479,7 @@ async function generate(){
     if(DR.idea){ STATE.ideas = STATE.ideas.filter(i=>i.id!==DR.idea); STATE.brandIdeas = STATE.brandIdeas.filter(i=>i.id!==DR.idea); DR.idea=null; }
     if(location.hash.startsWith('#/brand/')) route();
   }catch(e){ $('#gstat', d).textContent = 'Error: ' + e.message; }
-  DR.busy = false; $('#go', d).disabled = false;
+  DR.busy = false; if(go) go.disabled = false;
 }
 
 /* idea details / add */
@@ -597,12 +615,34 @@ async function openScout(slug){
   $('#scgo', d).onclick = async () => {
     const topic = $('#sctopic', d).value.trim();
     if(!topic){ $('#scstat', d).textContent = 'Topic needed.'; return; }
-    $('#scstat', d).textContent = 'Sending…';
-    const {error} = await sb.from('content_scout_requests').insert({brand_slug: slug||null, topic, notes: $('#scnotes', d).value.trim()||null, requested_by: STATE.user});
-    if(error){ $('#scstat', d).textContent = 'Error: '+error.message; return; }
-    $('#scstat', d).textContent = 'Sent. Ideas land on the brand page in a few minutes.';
-    $('#sctopic', d).value = '';
+    $('#scstat', d).textContent = 'Sending…'; $('#scgo', d).disabled = true;
+    const {data: row, error} = await sb.from('content_scout_requests').insert({brand_slug: slug||null, topic, notes: $('#scnotes', d).value.trim()||null, requested_by: STATE.user}).select('id,created_at').single();
+    if(error){ $('#scstat', d).textContent = 'Error: '+error.message; $('#scgo', d).disabled = false; return; }
+    watchScout(row.id, slug, row.created_at, msg => { const s = $('#scstat'); if(s) s.textContent = msg; });
   };
+}
+
+/* Scout watcher: poll the request until done, then close the drawer, reload and mark the new ideas at the top */
+async function watchScout(reqId, slug, since, say){
+  const t0 = Date.now(); let n = 0;
+  say('Scout working. This page updates itself when the ideas land (usually about a minute).');
+  while(Date.now() - t0 < 6*60*1000){
+    await new Promise(r => setTimeout(r, 5000)); n++;
+    const {data: r} = await sb.from('content_scout_requests').select('status,result,brand_slug').eq('id', reqId).single();
+    if(!r) continue;
+    if(r.status === 'done' || r.status === 'error' || r.status === 'failed'){
+      const ideas = r.result?.ideas ?? 0;
+      if(r.status !== 'done' || !ideas){ say(r.status === 'done' ? 'Scout finished but found nothing it would file.' : 'Scout hit an error: ' + (r.result?.error || r.status)); return; }
+      STATE.freshSince = since;
+      closeDrawer();
+      const target = slug || (r.result?.brands ? String(r.result.brands).split(',')[0].trim() : null);
+      if(target && location.hash !== '#/brand/'+target){ location.hash = '#/brand/'+target; } else { await route(); }
+      setTimeout(() => { const el = document.querySelector('tr.fresh'); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 300);
+      return;
+    }
+    if(n % 6 === 0) say('Still working (' + Math.round((Date.now()-t0)/1000) + 's). Ideas appear here the moment they land.');
+  }
+  say('Scout is taking longer than usual. Reload the page in a minute.');
 }
 
 /* article footer: word count, tags, image options, style pass */
